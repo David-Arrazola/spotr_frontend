@@ -5,9 +5,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { SpotrHeader } from '@/components/spotr-header';
+import { Image } from 'expo-image';
 import { SpotrColors, SpotrRadii, SpotrSpacing } from '@/constants/spotr-theme';
 
 /** Single-select fitness tier; maps to radio UI and would filter match ranking server-side. */
@@ -69,15 +67,21 @@ export default function ProfileScreen() {
   /** Thumb’s left offset in px so it stays inside the track (24px-wide thumb). */
   const thumbX = trackW > 0 ? Math.min(trackW - 24, Math.max(0, ratio * (trackW - 24))) : 0;
 
+  const AVATAR_URI =
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=128&h=128&fit=crop';
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <SpotrHeader />
+    <View style={styles.safe}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         // Lets taps on chips/buttons register while the keyboard is open (e.g. after editing a prompt).
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
+
+        <Pressable style={styles.avatarWrap} hitSlop={8}>
+          <Image source={{ uri: AVATAR_URI }} style={styles.avatar} contentFit="cover" />
+        </Pressable>
 
         {/* ---------- Workout region: radius + map placeholders ---------- */}
         <View style={styles.card}>
@@ -233,7 +237,7 @@ export default function ProfileScreen() {
           <Text style={styles.secondaryBtnText}>Reset to Default</Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -542,5 +546,19 @@ const styles = StyleSheet.create({
     color: SpotrColors.brown,
     fontSize: 16,
     fontWeight: '700',
+  },
+  avatarWrap: {
+    width: 130,
+    height: 130,
+    borderRadius: SpotrRadii.avatar,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: SpotrColors.border,
+    alignSelf: "center",
+    marginBottom: 13
+  },
+  avatar: {
+    width: '100%',
+    height: '100%',
   },
 });

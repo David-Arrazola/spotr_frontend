@@ -4,20 +4,15 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { SpotrColors, SpotrRadii } from '@/constants/spotr-theme';
 
-const AVATAR_URI =
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=128&h=128&fit=crop';
 
 type SpotrHeaderProps = {
   onPressFilter?: () => void;
-  onPressAvatar?: () => void;
+
 };
 
-export function SpotrHeader({ onPressFilter, onPressAvatar }: SpotrHeaderProps) {
+export function SpotrHeader({ onPressFilter }: SpotrHeaderProps) {
   return (
     <View style={styles.row}>
-      <Pressable onPress={onPressAvatar} style={styles.avatarWrap} hitSlop={8}>
-        <Image source={{ uri: AVATAR_URI }} style={styles.avatar} contentFit="cover" />
-      </Pressable>
       <Text style={styles.logo}>Spotr</Text>
       <Pressable onPress={onPressFilter} style={styles.iconBtn} hitSlop={8}>
         <MaterialIcons name="tune" size={26} color={SpotrColors.brown} />

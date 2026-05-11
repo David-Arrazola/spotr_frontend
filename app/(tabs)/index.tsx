@@ -1,9 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { SpotrHeader } from '@/components/spotr-header';
 import { SpotrColors, SpotrRadii, SpotrSpacing } from '@/constants/spotr-theme';
 
 const SARAH_IMG =
@@ -21,8 +19,7 @@ function serifTitle() {
 
 export default function ExploreScreen() {
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <SpotrHeader />
+    <View style={styles.safe}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -95,7 +92,7 @@ export default function ExploreScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
