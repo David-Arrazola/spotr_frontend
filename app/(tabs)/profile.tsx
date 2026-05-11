@@ -1,3 +1,7 @@
+/**
+ * Profile tab: “your account” settings that drive Explore — discovery filters (radius, level, gyms)
+ * plus Hinge-style prompts. All data here is local state (mock); later you’ll load/save via API.
+ */
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -6,10 +10,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SpotrHeader } from '@/components/spotr-header';
 import { SpotrColors, SpotrRadii, SpotrSpacing } from '@/constants/spotr-theme';
 
+/** Single-select fitness tier; maps to radio UI and would filter match ranking server-side. */
 type Level = 'beginner' | 'intermediate' | 'pro';
 
+/** Seed chips so the screen isn’t empty before search/autocomplete exists. */
 const DEFAULT_GYMS = ['Equinox - Kensington', 'Third Space - Soho'];
 
+/** Static prompt definitions; keys tie answers in `answers` state to the right card. */
 const PROMPTS = [
   {
     key: '1',
@@ -31,6 +38,7 @@ const PROMPTS = [
   },
 ];
 
+/** Serif stack for headings to match the Spotr mock (Georgia on iOS, generic serif elsewhere). */
 function serifTitle() {
   return Platform.select({
     ios: 'Georgia',
@@ -40,16 +48,25 @@ function serifTitle() {
 }
 
 export default function ProfileScreen() {
+  // --- Discovery: search radius (1–100 mi) ---
   const [radiusMi, setRadiusMi] = useState(25);
+  /** Slider track width from layout; used to map tap X → miles and to position the thumb. */
   const [trackW, setTrackW] = useState(0);
+
   const [level, setLevel] = useState<Level>('intermediate');
+
+  // --- Gyms: search box string + list of selected club names (chips) ---
   const [gymQuery, setGymQuery] = useState('');
   const [gyms, setGyms] = useState<string[]>(DEFAULT_GYMS);
+
+  // --- Prompts: one string per PROMPTS[].key ---
   const [answers, setAnswers] = useState<Record<string, string>>(() =>
     Object.fromEntries(PROMPTS.map((p) => [p.key, p.defaultAnswer]))
   );
 
+  /** Normalized 0–1 position of the thumb between 1 and 100 miles (inclusive range). */
   const ratio = (radiusMi - 1) / 99;
+  /** Thumb’s left offset in px so it stays inside the track (24px-wide thumb). */
   const thumbX = trackW > 0 ? Math.min(trackW - 24, Math.max(0, ratio * (trackW - 24))) : 0;
 
   return (
@@ -58,26 +75,30 @@ export default function ProfileScreen() {
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
+        // Lets taps on chips/buttons register while the keyboard is open (e.g. after editing a prompt).
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
-        <Text style={styles.pageTitle}>Discovery</Text>
-        <Text style={styles.pageSubtitle}>
-          Fine-tune who you see so Spotr can match you with people who train like you and show up at
-          the same places.
-        </Text>
 
+        {/* ---------- Workout region: radius + map placeholders ---------- */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
             <MaterialIcons name="place" size={22} color={SpotrColors.brown} />
             <Text style={styles.cardTitle}>Workout region</Text>
+
             <View style={styles.milesBadge}>
               <Text style={styles.milesBadgeText}>{radiusMi} miles</Text>
             </View>
           </View>
+
           <View style={styles.sliderLabels}>
             <Text style={styles.sliderEdge}>1 mi</Text>
             <Text style={styles.sliderEdge}>100 mi</Text>
           </View>
+
+          {/*
+            Custom slider: tap anywhere on the bar to set miles. `onLayout` captures width;
+            `locationX` / width gives a 0–1 ratio → mapped to 1..100. Thumb + fill are purely visual.
+          */}
           <Pressable
             style={styles.sliderTouch}
             onLayout={(e) => setTrackW(e.nativeEvent.layout.width)}
@@ -91,23 +112,28 @@ export default function ProfileScreen() {
             <View style={[styles.sliderFillBar, { width: `${ratio * 100}%` }]} />
             <View style={[styles.sliderThumb, { left: thumbX }]} pointerEvents="none" />
           </Pressable>
+
           <View style={styles.mapPreview}>
             <MaterialIcons name="map" size={40} color={SpotrColors.textMuted} />
             <Text style={styles.mapHint}>Map preview</Text>
           </View>
+
           <Pressable style={styles.mapBtn} onPress={() => {}}>
             <Text style={styles.mapBtnText}>Center on Current Location</Text>
           </Pressable>
         </View>
 
+        {/* ---------- Fitness level: exclusive choice (radio pattern) ---------- */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
             <MaterialIcons name="bolt" size={22} color={SpotrColors.brown} />
             <Text style={styles.cardTitle}>Fitness level</Text>
           </View>
+
           <Text style={styles.cardHelp}>
             We use this to prioritize compatible training partners in Explore.
           </Text>
+
           {(
             [
               { id: 'beginner' as const, label: 'Beginner' },
@@ -119,21 +145,26 @@ export default function ProfileScreen() {
               key={opt.id}
               style={[styles.radioRow, level === opt.id && styles.radioRowActive]}
               onPress={() => setLevel(opt.id)}>
+
               <View style={[styles.radioOuter, level === opt.id && styles.radioOuterActive]}>
                 {level === opt.id ? <View style={styles.radioInner} /> : null}
               </View>
+
               <Text style={styles.radioLabel}>{opt.label}</Text>
             </Pressable>
           ))}
         </View>
 
+        {/* ---------- Gyms: search to append chips; X removes a gym ---------- */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
             <MaterialIcons name="fitness-center" size={22} color={SpotrColors.brown} />
             <Text style={styles.cardTitle}>Gym affiliations</Text>
           </View>
+
           <View style={styles.searchField}>
             <MaterialIcons name="search" size={20} color={SpotrColors.textMuted} />
+
             <TextInput
               style={styles.searchInput}
               placeholder="Search for your gym..."
@@ -150,6 +181,7 @@ export default function ProfileScreen() {
               returnKeyType="done"
             />
           </View>
+
           <View style={styles.chipWrap}>
             {gyms.map((g) => (
               <View key={g} style={styles.chip}>
@@ -162,11 +194,13 @@ export default function ProfileScreen() {
               </View>
             ))}
           </View>
+
           <Pressable style={styles.addClub} onPress={() => {}}>
             <Text style={styles.addClubText}>+ Add New Club</Text>
           </Pressable>
         </View>
 
+        {/* ---------- Profile prompts (copy from PROMPTS + answers state) ---------- */}
         <View style={styles.promptsHeader}>
           <Text style={styles.pageTitle}>Profile Prompts</Text>
           <View style={styles.completedBadge}>
@@ -178,6 +212,7 @@ export default function ProfileScreen() {
           <View key={p.key} style={styles.card}>
             <Text style={styles.promptLabel}>{p.label}</Text>
             <Text style={styles.promptQuestion}>{p.question}</Text>
+
             <TextInput
               style={styles.promptInput}
               multiline
@@ -189,9 +224,11 @@ export default function ProfileScreen() {
           </View>
         ))}
 
+        {/* Primary / secondary actions — wire to API + reset handlers later. */}
         <Pressable style={styles.primaryBtn} onPress={() => {}}>
           <Text style={styles.primaryBtnText}>Save All Changes</Text>
         </Pressable>
+
         <Pressable style={styles.secondaryBtn} onPress={() => {}}>
           <Text style={styles.secondaryBtnText}>Reset to Default</Text>
         </Pressable>
@@ -200,6 +237,7 @@ export default function ProfileScreen() {
   );
 }
 
+/** Styles follow the same vertical order as the screen: layout → discovery cards → prompts → CTAs. */
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
@@ -268,6 +306,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: SpotrColors.brown,
   },
+  /* --- Radius slider visuals --- */
   sliderLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -309,6 +348,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: SpotrColors.surface,
   },
+  /* --- Map CTA (replace mapPreview with real map when ready) --- */
   mapPreview: {
     height: 120,
     borderRadius: 16,
@@ -334,6 +374,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
+  /* --- Fitness level: helper text + custom radio rows --- */
   cardHelp: {
     fontSize: 14,
     color: SpotrColors.textMuted,
@@ -378,6 +419,7 @@ const styles = StyleSheet.create({
     color: SpotrColors.text,
     fontWeight: '500',
   },
+  /* --- Gym search + chips --- */
   searchField: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -430,6 +472,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: SpotrColors.brown,
   },
+  /* --- Prompt section + inputs --- */
   promptsHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -473,6 +516,7 @@ const styles = StyleSheet.create({
     minHeight: 88,
     textAlignVertical: 'top',
   },
+  /* --- Footer actions --- */
   primaryBtn: {
     backgroundColor: SpotrColors.brownButton,
     borderRadius: SpotrRadii.button,
