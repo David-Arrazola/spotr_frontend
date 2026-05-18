@@ -1,16 +1,9 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useState } from "react";
-import {
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { Image } from "expo-image";
 import { SpotrColors } from "@/constants/spotr-theme";
-import styles from "./styles";
+import styles from "../../styles/profileStyles";
 
 type Level = "beginner" | "intermediate" | "pro";
 

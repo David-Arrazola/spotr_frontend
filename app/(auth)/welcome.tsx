@@ -1,6 +1,6 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { router } from "expo-router";
-import styles from "./styles";
+import styles from "../../styles/welcomeStyles";
 
 export default function WelcomeScreen() {
   return (
@@ -14,14 +14,14 @@ export default function WelcomeScreen() {
       <View style={styles.buttonContainer}>
         <Pressable
           style={[styles.button, styles.primaryButton]}
-          onPress={() => router.push("/login")}
+          onPress={() => router.push("./login")}
         >
           <Text style={styles.primaryText}>Log In</Text>
         </Pressable>
 
         <Pressable
           style={[styles.button, styles.secondaryButton]}
-          onPress={() => router.push("/register")}
+          onPress={() => router.push("./register")}
         >
           <Text style={styles.secondaryText}>Create Account</Text>
         </Pressable>
